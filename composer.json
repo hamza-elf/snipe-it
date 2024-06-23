@@ -57,7 +57,6 @@
     "onelogin/php-saml": "^3.4",
     "paragonie/constant_time_encoding": "^2.3",
     "phpdocumentor/reflection-docblock": "^5.1",
-    //H.E added phpword by Mohcin
     "phpoffice/phpword": "^0.18.3",
     "phpspec/prophecy": "^1.10",
     "pragmarx/google2fa-laravel": "^1.3",

@@ -211,7 +211,7 @@ final class Company extends SnipeModel
     {
         // If not logged in and hitting this, assume we are on the command line and don't scope?'
         //H.E
-        if (! static::isFullMultipleCompanySupportEnabled() || (Auth::check() && Auth::user()->isSuperUser()) || (! Auth::check()) || (Auth::check() && Gate::allows('view.all'))) {
+        if (! static::isFullMultipleCompanySupportEnabled() || (Auth::hasUser() && Auth::user()->isSuperUser()) || (! Auth::hasUser()) || (Auth::hasUser() && Gate::allows('view.all'))) {
             return $query;
         } else {
             return static::scopeCompanyablesDirectly($query, $column, $table_name);
@@ -223,7 +223,7 @@ final class Company extends SnipeModel
         if (count($companyable_names) == 0) {
             throw new Exception('No Companyable Children to scope');
         //H.E
-        } elseif (! static::isFullMultipleCompanySupportEnabled() || (Auth::check() && Auth::user()->isSuperUser()) || (Auth::check() && Gate::allows('view.all'))) {
+        } elseif (! static::isFullMultipleCompanySupportEnabled() || (Auth::hasUser() && Auth::user()->isSuperUser()) || (Auth::hasUser() && Gate::allows('view.all'))) {
             return $query;
         } else {
             $f = function ($q) {
@@ -290,15 +290,6 @@ final class Company extends SnipeModel
      * @param $table_name
      * @return mixed
      */
-    public static function scopeCompanyables($query, $column = 'company_id', $table_name = null)
-    {
-        // If not logged in and hitting this, assume we are on the command line and don't scope?'
-        if (! static::isFullMultipleCompanySupportEnabled() || (Auth::hasUser() && Auth::user()->isSuperUser()) || (! Auth::hasUser())) {
-            return $query;
-        } else {
-            return static::scopeCompanyablesDirectly($query, $column, $table_name);
-        }
-    }
 
     /**
      * Scoping table queries, determining if a logged-in user is part of a company, and only allows
@@ -338,29 +329,6 @@ final class Company extends SnipeModel
      * @param $query
      * @return mixed
      */
-    public static function scopeCompanyableChildren(array $companyable_names, $query)
-    {
 
-        if (count($companyable_names) == 0) {
-            throw new Exception('No Companyable Children to scope');
-        } elseif (! static::isFullMultipleCompanySupportEnabled() || (Auth::hasUser() && Auth::user()->isSuperUser())) {
-            return $query;
-        } else {
-            $f = function ($q) {
-                Log::debug('scopeCompanyablesDirectly firing ');
-                static::scopeCompanyablesDirectly($q);
-            };
-
-            $q = $query->where(function ($q) use ($companyable_names, $f) {
-                $q2 = $q->whereHas($companyable_names[0], $f);
-
-                for ($i = 1; $i < count($companyable_names); $i++) {
-                    $q2 = $q2->orWhereHas($companyable_names[$i], $f);
-                }
-            });
-
-            return $q;
-        }
-    }
 
 }
