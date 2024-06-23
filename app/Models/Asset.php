@@ -97,26 +97,31 @@ class Asset extends Depreciable
     ];
 
     protected $rules = [
-        'name'            => 'max:255|nullable',
-        'model_id'        => 'required|integer|exists:models,id',
-        'status_id'       => 'required|integer|exists:status_labels,id',
-        //H.E added by Mohcin
-        'company_id'      => 'integer|required|exists:models,id',
-        'warranty_months' => 'numeric|nullable|digits_between:0,240',
-        'physical'        => 'numeric|max:1|nullable',
-        'checkout_date'   => 'date|max:10|min:10|nullable',
-        'checkin_date'    => 'date|max:10|min:10|nullable',
-        'supplier_id'     => 'exists:suppliers,id|numeric|nullable',
-        'location_id'     => 'exists:locations,id|nullable',
-        //H.E added by Mohcin
-        'rtd_location_id' => 'exists:locations,id|required',
-        'asset_tag'       => 'required|min:1|max:255|unique_undeleted',
-        'status'          => 'integer',
-        'serial'          => 'unique_serial|nullable',
-        'purchase_cost'   => 'numeric|nullable|gte:0',
-        'next_audit_date' => 'date|nullable',
-        'last_audit_date' => 'date|nullable',
-        'supplier_id'     => 'exists:suppliers,id|nullable',
+        'model_id'         => 'required|integer|exists:models,id,deleted_at,NULL|not_array',
+        'status_id'        => 'required|integer|exists:status_labels,id',
+        'asset_tag'        => 'required|min:1|max:255|unique_undeleted:assets,asset_tag|not_array',
+        'name'             => 'nullable|max:255',
+        'company_id'       => 'required|integer|exists:companies,models,id',
+        'warranty_months'  => 'nullable|numeric|digits_between:0,240',
+        'last_checkout'    => 'nullable|date_format:Y-m-d H:i:s',
+        'last_checkin'     => 'nullable|date_format:Y-m-d H:i:s',
+        'expected_checkin' => 'nullable|date',
+        'last_audit_date'  => 'nullable',
+        'next_audit_date'  => 'nullable|date|after:last_audit_date',
+        'next_audit_date'  => 'nullable|date',
+        'location_id'      => 'nullable|exists:locations,id',
+        'rtd_location_id'  => 'required|exists:locations,id',
+        'purchase_date'    => 'nullable|date|date_format:Y-m-d',
+        'serial'           => 'nullable|unique_undeleted:assets,serial',
+        'purchase_cost'    => 'nullable|numeric|gte:0',
+        'supplier_id'      => 'nullable|exists:suppliers,id',
+        'asset_eol_date'   => 'nullable|date',
+        'eol_explicit'     => 'nullable|boolean',
+        'byod'             => 'nullable|boolean',
+        'order_number'     => 'nullable|string|max:191',
+        'notes'            => 'nullable|string|max:65535',
+        'assigned_to'      => 'nullable|integer',
+        'requestable'      => 'nullable|boolean',
     ];
 
 
@@ -148,7 +153,7 @@ class Asset extends Depreciable
         'expected_checkin',
         'byod',
         'asset_eol_date',
-        'eol_explicit', 
+        'eol_explicit',
         'last_audit_date',
         'next_audit_date',
         'asset_eol_date',
@@ -160,21 +165,21 @@ class Asset extends Depreciable
 
     /**
      * The attributes that should be included when searching the model.
-     * 
+     *
      * @var array
      */
     protected $searchableAttributes = [
-      'name', 
-      'asset_tag', 
-      'serial', 
-      'order_number', 
-      'purchase_cost', 
-      'notes', 
+      'name',
+      'asset_tag',
+      'serial',
+      'order_number',
+      'purchase_cost',
+      'notes',
       'created_at',
-      'updated_at',      
-      'purchase_date', 
-      'expected_checkin', 
-      'next_audit_date', 
+      'updated_at',
+      'purchase_date',
+      'expected_checkin',
+      'next_audit_date',
       'last_audit_date',
       'last_checkin',
       'last_checkout',
@@ -183,7 +188,7 @@ class Asset extends Depreciable
 
     /**
      * The relations and their attributes that should be included when searching the model.
-     * 
+     *
      * @var array
      */
     protected $searchableRelations = [
@@ -296,7 +301,7 @@ class Asset extends Depreciable
 
             // The asset status is not archived and is deployable
             if (($this->assetstatus) && ($this->assetstatus->archived == '0')
-                && ($this->assetstatus->deployable == '1')) 
+                && ($this->assetstatus->deployable == '1'))
             {
                 return true;
 
@@ -569,7 +574,7 @@ class Asset extends Depreciable
      */
     public function assignedType()
     {
-        return strtolower(class_basename($this->assigned_type));
+        return $this->assigned_type ? strtolower(class_basename($this->assigned_type)) : null;
     }
 
 
@@ -853,11 +858,11 @@ class Asset extends Depreciable
         foreach ($assets as $asset) {
             $results = preg_match("/\d+$/", $asset['asset_tag'], $matches);
 
-            if ($results) 
+            if ($results)
             {
                 $number = $matches[0];
 
-                if ($number > $max) 
+                if ($number > $max)
                 {
                     $max = $number;
                 }
