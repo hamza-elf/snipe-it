@@ -92,6 +92,7 @@ class AssetCheckinController extends Controller
         //$asset->last_checkout = null;
         $asset->last_checkin = now();
         $asset->assignedTo()->disassociate($asset);
+        $asset->assigned_type = null;
         $asset->accepted = null;
         $asset->name = $request->get('name');
 
@@ -157,16 +158,16 @@ class AssetCheckinController extends Controller
 
 
         // Was the asset updated?
-            if ($asset->save()) {
-                event(new CheckoutableCheckedIn($asset, $target, Auth::user(), e($note), $checkin_at));
+        if ($asset->save()) {
+            event(new CheckoutableCheckedIn($asset, $target, Auth::user(), e($note), $checkin_at));
 
             if ((isset($user)) && ($backto == 'user')) {
                 return redirect()->route('users.show', $user->id)->with('success', trans('admin/hardware/message.checkin.success'));
             }
 
-        return redirect()->route('hardware.index')->with('success', trans('admin/hardware/message.checkin.success'));
-    }
-                // Redirect to the asset management page with error
+            return redirect()->route('hardware.index')->with('success', trans('admin/hardware/message.checkin.success'));
+        }
+        // Redirect to the asset management page with error
         return redirect()->route('hardware.index')->with('error', trans('admin/hardware/message.checkin.error').$asset->getErrors());
     }
 
