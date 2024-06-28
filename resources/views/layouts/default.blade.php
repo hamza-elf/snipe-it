@@ -364,18 +364,21 @@
                 </li>
 
 
-                <li>
-                    <a href="{{ route('profile') }}">
-                        <i class="fas fa-user fa-fw" aria-hidden="true"></i>
-                        {{ trans('general.editprofile') }}
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ route('account.password.index') }}">
-                        <i class="fa-solid fa-asterisk fa-fw" aria-hidden="true"></i>
-                        {{ trans('general.changepassword') }}
-                    </a>
-                </li>
+                                        @can('self.profile')
+                                        <li>
+                                            <a href="{{ route('profile') }}">
+                                                <i class="fas fa-user fa-fw" aria-hidden="true"></i>
+                                                {{ trans('general.editprofile') }}
+                                            </a>
+                                        </li>
+                                        @endcan
+
+                                        <li>
+                                            <a href="{{ route('account.password.index') }}">
+                                                <i class="fa-solid fa-asterisk fa-fw" aria-hidden="true"></i>
+                                                {{ trans('general.changepassword') }}
+                                            </a>
+                                        </li>
 
 
                 @can('self.api')
@@ -807,14 +810,14 @@
                                         </li>
                                     @endcan
 
-                                    @can('viewRequestable', \App\Models\Asset::class)
-                                        <li{!! Request::is('account/requestable-assets') ? ' class="active"' : '' !!}>
-                                            <a href="{{ route('requestable-assets') }}">
-                                                <i class="fa fa-laptop fa-fw"></i>
-                                                <span>{{ trans('admin/hardware/general.requestable') }}</span>
-                                            </a>
-                                            </li>
-                                        @endcan
+                        @can('viewRequestable', \App\Models\Asset::class)
+                            <li{!! (Request::is('account/requestable-assets') ? ' class="active"' : '') !!}>
+                                <a href="{{ route('requestable-assets') }}">
+                                    <i class="fa fa-laptop fa-fw"></i>
+                                    <span>{{ trans('general.requestable_items') }}</span>
+                                </a>
+                            </li>
+                        @endcan
 
 
                                         </ul>

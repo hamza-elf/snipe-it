@@ -12,7 +12,7 @@ return [
     'warning_audit_date_mismatch' 	=> 'La próxima fecha de auditoría de este activo (:next_audit_date) es anterior a la última fecha de auditoría (:last_audit_date). Por favor, actualice la próxima fecha de auditoría.',
 
     'create' => [
-        'error'   		=> 'El activo no ha sido creado, por favor, inténtelo de nuevo. :(',
+        'error'   		=> 'El activo no fue creado, por favor, inténtelo de nuevo. :(',
         'success' 		=> 'Activo creado con éxito. :)',
         'success_linked' => 'Activo con etiqueta :tag creado con éxito. <strong><a href=":link" style="color: white;">Haga clic aquí para ver</a></strong>.',
     ],
@@ -64,14 +64,14 @@ return [
 
 
     'delete' => [
-        'confirm'   	=> '¿Estás seguro de que quieres borrar este archivo?',
+        'confirm'   	=> '¿Está seguro de que desea eliminar este activo?',
         'error'   		=> 'Ha habido un problema eliminando el activo. Por favor, inténtelo de nuevo.',
         'nothing_updated'   => 'Ningún activo se seleccionó, así que nada fue borrado.',
         'success' 		=> 'El activo fue borrado con éxito.',
     ],
 
     'checkout' => [
-        'error'   		=> 'El activo no se ha asignado, por favor, inténtelo de nuevo',
+        'error'   		=> 'El activo no fue asignado, por favor inténtelo de nuevo',
         'success' 		=> 'Activo asignado con éxito.',
         'user_does_not_exist' => 'El usuario es inválido. Por favor, inténtelo de nuevo.',
         'not_available' => '¡Ese activo no está disponible para retirar!',
