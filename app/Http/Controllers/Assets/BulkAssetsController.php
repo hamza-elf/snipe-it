@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use App\Http\Requests\AssetCheckoutRequest;
 use App\Http\Traits\DocumentGeneratorTrait;
+use App\Models\CustomField;
 
 class BulkAssetsController extends Controller
 {
@@ -45,9 +46,11 @@ class BulkAssetsController extends Controller
     public function edit(Request $request)
     {
         $this->authorize('update', Asset::class);
-        
+
+        /**
+         * No asset IDs were passed
+         */
         if (! $request->filled('ids')) {
-            
             return redirect()->back()->with('error', trans('admin/hardware/message.update.no_assets_selected'));
         }
 
@@ -57,10 +60,58 @@ class BulkAssetsController extends Controller
         $bulk_back_url = request()->headers->get('referer');
         session(['bulk_back_url' => $bulk_back_url]);
 
-        $asset_ids = array_values(array_unique($request->input('ids')));
-        
+        $allowed_columns = [
+            'id',
+            'name',
+            'asset_tag',
+            'serial',
+            'model_number',
+            'last_checkout',
+            'notes',
+            'expected_checkin',
+            'order_number',
+            'image',
+            'assigned_to',
+            'created_at',
+            'updated_at',
+            'purchase_date',
+            'purchase_cost',
+            'last_audit_date',
+            'next_audit_date',
+            'warranty_months',
+            'checkout_counter',
+            'checkin_counter',
+            'requests_counter',
+            'byod',
+            'asset_eol_date',
+        ];
+
+
+        /**
+         * Make sure the column is allowed, and if it's a custom field, make sure we strip the custom_fields. prefix
+         */
+        $order = $request->input('order') === 'asc' ? 'asc' : 'desc';
+        $sort_override = str_replace('custom_fields.', '', $request->input('sort'));
+
+        // This handles all of the pivot sorting below (versus the assets.* fields in the allowed_columns array)
+        $column_sort = in_array($sort_override, $allowed_columns) ? $sort_override : 'assets.id';
+
+        $assets = Asset::with('assignedTo', 'location', 'model')->whereIn('assets.id', $asset_ids);
+
+        $assets = $assets->get();
+
+        if ($assets->isEmpty()) {
+            Log::debug('No assets were found for the provided IDs', ['ids' => $asset_ids]);
+            return redirect()->back()->with('error', trans('admin/hardware/message.update.assets_do_not_exist_or_are_invalid'));
+        }
+
+        $models = $assets->unique('model_id');
+        $modelNames = [];
+        foreach($models as $model) {
+            $modelNames[] = $model->model->name;
+        }
+
         if ($request->filled('bulk_actions')) {
-            $assets = Asset::find($asset_ids);
 
 
             switch ($request->input('bulk_actions')) {
@@ -94,7 +145,9 @@ class BulkAssetsController extends Controller
 
                     return view('hardware/bulk')
                         ->with('assets', $asset_ids)
-                        ->with('statuslabel_list', Helper::statusLabelList());
+                        ->with('statuslabel_list', Helper::statusLabelList())
+                        ->with('models', $models->pluck(['model']))
+                        ->with('modelNames', $modelNames);
 
                 case 'checkin':
                     $assets = Asset::with('assignedTo', 'location','defaultLoc')->find($asset_ids);
