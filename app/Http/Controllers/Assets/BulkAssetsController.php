@@ -60,6 +60,7 @@ class BulkAssetsController extends Controller
         $asset_ids = array_values(array_unique($request->input('ids')));
         
         if ($request->filled('bulk_actions')) {
+            $assets = Asset::find($asset_ids);
 
 
             switch ($request->input('bulk_actions')) {
